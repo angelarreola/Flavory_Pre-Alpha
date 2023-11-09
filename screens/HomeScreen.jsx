@@ -1,50 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import {
-  MaterialCommunityIcons,
-  FontAwesome,
-  Entypo,
-} from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { MaterialCommunityIcons, FontAwesome, Entypo } from "@expo/vector-icons";
 
 import AllRecipes from "./Recipes/AllRecipes";
 import MyProfile from "./Recipes/MyProfile";
 import AddRecipe from "./Recipes/AddRecipe";
 
-import { getAuth, onAuthStateChanged } from "../firebase";
+import { useAuth } from "../AuthContext"; // Asegúrate de que la ruta sea la correcta
 
 const Tab = createBottomTabNavigator();
 
 const HomeScreen = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    // Cleanup subscription on unmount
-    return unsubscribe;
-  }, []);
+  const { currentUser } = useAuth(); // Usa el contexto de autenticación
+  const navigation = useNavigation()
 
   function withUserProp(Component) {
-    // Solo renderiza el componente si el usuario no es null y no está cargando
-    return (props) => !loading && user ? <Component {...props} user={user} auth={getAuth()} /> : null;
+    // Solo renderiza el componente si currentUser no es null
+    return (props) => currentUser ? <Component {...props} user={currentUser} /> : null;
   }
 
-  if (loading) {
-    // Aquí puedes retornar un indicador de carga si lo deseas
-    console.log('...');
+  if (!currentUser) {
+    // Si no hay un usuario actual, podrías redirigir al login o mostrar un indicador de carga
+    console.log('Redirecting to login...');
+    navigation.navigate('Login'); // Asegúrate de tener acceso a navigation o usa useNavigation hook.
   }
-
   console.log("Home");
   return (
     <Tab.Navigator initialRouteName="AllRecipes">
       <Tab.Screen
         name="AllRecipes"
-        component={withUserProp(AllRecipes, user)}
+        component={withUserProp(AllRecipes)}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
@@ -55,7 +41,7 @@ const HomeScreen = () => {
       />
       <Tab.Screen
         name="AddRecipe"
-        component={withUserProp(AddRecipe, user)}
+        component={withUserProp(AddRecipe)}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
@@ -66,7 +52,7 @@ const HomeScreen = () => {
       />
       <Tab.Screen
         name="MyProfile"
-        component={withUserProp(MyProfile, user)}
+        component={withUserProp(MyProfile)}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (

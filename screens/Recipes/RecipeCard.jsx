@@ -35,7 +35,7 @@ export default function RecipeCard({ recipe, controls, handleEditRecipe }) {
               style={controls ? styles.editBtn : { display: "none" }}
               onPress={() => handleEditRecipe(recipe)}
             >
-              <Feather name="edit" size={24} color="#FFFFFF" />
+              <Feather name="edit" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </ImageBackground>
@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   recipeTextTitle: {
+    flex: 1,
     color: "#FF893C",
     fontWeight: "bold",
     fontSize: 22,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
   },
   editBtn: {
     position: "absolute",
-    top: 8,
-    right: 10,
+    top: 5,
+    right: 5,
   },
 });

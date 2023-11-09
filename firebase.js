@@ -11,11 +11,11 @@
 //   FIREBASE_APP_ID
 // } from '@env';
 
-import { initializeApp, getApp } from "firebase/app";
-import { initializeAuth, getAuth, getReactNativePersistence, signOut, onAuthStateChanged } from 'firebase/auth'
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { initializeApp } from "firebase/app";
+import { initializeAuth, getReactNativePersistence, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
 import {ref as storageRef, getDownloadURL, uploadBytes, getStorage } from 'firebase/storage';
 import { getFirestore, collection, addDoc, query, getDocs, where, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
@@ -31,14 +31,12 @@ export const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // initialize Firebase Auth for that app immediately
 const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  persistence: getReactNativePersistence(AsyncStorage)
 });
 
 export {
   app,
   auth,
-  getApp,
-  getAuth,
   storageRef,
   getDownloadURL,
   uploadBytes,
@@ -53,6 +51,8 @@ export {
   onAuthStateChanged,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
 };
 

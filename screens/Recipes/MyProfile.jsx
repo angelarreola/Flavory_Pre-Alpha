@@ -1,82 +1,58 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-  SafeAreaView,
-  StatusBar,
-} from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
-
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, SafeAreaView, StatusBar } from "react-native";
 import RecipeCard from "./RecipeCard";
-
-import {
-  getAuth,
-  signOut,
-  collection,
-  query,
-  where,
-  getDocs,
-  getFirestore,
-} from "../../firebase";
+import { useAuth } from '../../AuthContext';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+
+import { collection, query, where, getDocs, getFirestore } from "../../firebase";
 
 const MyProfile = ({ user, auth }) => {
   const [myRecipes, setMyRecipes] = useState([]);
-  const [isUserLoaded, setIsUserLoaded] = useState(false);
   const navigation = useNavigation();
-
-  useEffect(() => {
-    if (user && user.uid) {
-      setIsUserLoaded(true);
-    }
-  }, [user]);
+  const { currentUser, logout } = useAuth()  
 
   useFocusEffect(
     useCallback(() => {
-      const fetchRecipes = async () => {
-        const db = getFirestore();
-        const q = query(
-          collection(db, "recipes"),
-          where("userId", "==", user.uid)
-        );
+      if (currentUser && currentUser.uid) {
+        const fetchRecipes = async () => {
+          const db = getFirestore();
+          const q = query(
+            collection(db, "recipes"),
+            where("userId", "==", currentUser.uid)
+          );
 
-        try {
-          const querySnapshot = await getDocs(q);
+          try {
+            const querySnapshot = await getDocs(q);
+            const recipesArray = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setMyRecipes(recipesArray);
+          } catch (error) {
+            console.error("Error fetching recipes:", error);
+          }
+        };
 
-          const recipesArray = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setMyRecipes(recipesArray);
-
-          console.log(myRecipes);
-        } catch (error) {
-          console.error("Error fetching recipes:", error);
-        }
-      };
-
-      fetchRecipes();
-
-    }, [isUserLoaded, user.uid])
+        fetchRecipes();
+      }
+    }, [currentUser])
   );
 
-  console.log("MYR");
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      console.log("User signed out!");
+      await logout(); // Utiliza la función de logout proporcionada por el contexto
       navigation.navigate("Login");
     } catch (error) {
       console.error("Sign out error:", error);
     }
   };
 
+
   const handleEditRecipe = (selectedRecipe) => {
-    navigation.navigate("EditRecipe",{selectedRecipe})
-  }
+    navigation.navigate("EditRecipe", { selectedRecipe });
+  };
+
 
   return (
     <View style={styles.container}>

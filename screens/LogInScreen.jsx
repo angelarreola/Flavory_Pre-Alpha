@@ -1,74 +1,44 @@
-import {
-  Image,
-  Text,
-  StyleSheet,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from "react-native";
-import { BlurView } from "expo-blur";
 import React, { useState, useEffect } from "react";
-
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { app, getAuth } from "../firebase";
+import { Image, Text, StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
+import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from '../AuthContext'; 
 
-const uri =
-  "https://isorepublic.com/wp-content/uploads/2018/11/isorepublic-background-kitchen-1100x733.jpg";
+const uri ="https://isorepublic.com/wp-content/uploads/2018/11/isorepublic-background-kitchen-1100x733.jpg";
 import ChefsitoLogo from "../assets/chefsitoLogo.png";
 
-const LogInScreen = () => {
-  const auth = getAuth(app);
 
+const LogInScreen = () => {
+  const { currentUser, login, signup } = useAuth(); // Utiliza las funciones de AuthContext
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        // El usuario está logueado, puedes redirigir a la pantalla principal o realizar otras acciones.
-        console.log('logueado!');
-        navigation.navigate("Home");
-      } else {
-        // El usuario no está logueado, permanece en la pantalla de inicio de sesión o muestra la pantalla de autenticación.
-      }
-    });
-
-    // Desmontar el listener cuando el componente se desmonte
-    return unsubscribe;
-  }, []);
-
-
-
-  const handleCreateAccount = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        console.log("Account Created!");
-      })
-      .catch((error) => {
-        console.log(error);
-        Alert.alert(error.message);
-      });
+  const handleCreateAccount = async () => {
+    try {
+      await signup(email, password); // Usa la función de AuthContext
+      Alert.alert(
+        "Cuenta Creada",
+        "Tu cuenta ha sido creada exitosamente. Ahora puedes iniciar sesión.",
+        [{ text: "OK" }]
+      );
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      console.log(error);
+      Alert.alert(error.message);
+    }
   };
 
-  const handleSignIn = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log("Signed in!");
-        const user = userCredential.user;
-        console.log(user);
-        navigation.navigate("Home");
-      })
-      .catch((error) => {
-        console.log(error);
-        Alert.alert(error.message);
-      });
+  const handleSignIn = async () => {
+    try {
+      await login(email, password); // Usa la función de AuthContext
+      console.log("Signed in!");
+      navigation.navigate("Home");
+    } catch (error) {
+      console.log(error);
+      Alert.alert(error.message);
+    }
   };
 
   return (
